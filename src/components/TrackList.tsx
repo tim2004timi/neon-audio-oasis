@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { AudioPlayer } from './AudioPlayer';
 import { Button } from "@/components/ui/button";
-import { Trash2, Calendar, Music, ArrowDown, ArrowUp } from "lucide-react";
+import { Trash2, Calendar, Music, ArrowDown, ArrowUp, Play } from "lucide-react";
 import { toast } from "sonner";
 
 export interface Track {
@@ -24,8 +24,10 @@ type SortDirection = 'asc' | 'desc';
 export const TrackList: React.FC<TrackListProps> = ({ tracks, onDeleteTrack }) => {
   const [sortKey, setSortKey] = useState<SortKey>('uploadDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [expandedTrackId, setExpandedTrackId] = useState<string | null>(null);
   
-  const handleDelete = (id: string) => {
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
     onDeleteTrack(id);
     toast.success('Трек удален');
   };
@@ -58,6 +60,10 @@ export const TrackList: React.FC<TrackListProps> = ({ tracks, onDeleteTrack }) =
     ) : (
       <ArrowDown size={16} />
     );
+  };
+  
+  const handleTrackClick = (trackId: string) => {
+    setExpandedTrackId(expandedTrackId === trackId ? null : trackId);
   };
   
   return (
@@ -94,26 +100,38 @@ export const TrackList: React.FC<TrackListProps> = ({ tracks, onDeleteTrack }) =
           <p>У вас пока нет загруженных треков</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {sortedTracks.map(track => (
-            <div key={track.id} className="track-item">
-              <div className="flex justify-between items-start mb-2">
-                <div>
+            <div 
+              key={track.id} 
+              onClick={() => handleTrackClick(track.id)}
+              className={`track-item transition-all duration-300 ${
+                expandedTrackId === track.id ? 'h-auto' : 'h-14'
+              } overflow-hidden cursor-pointer`}
+            >
+              <div className="flex justify-between items-center h-14">
+                <div className="flex items-center gap-3">
+                  <Play size={18} className="text-muted-foreground" />
                   <h3 className="font-medium">{track.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Загружен: {new Date(track.uploadDate).toLocaleDateString()}
-                  </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDelete(track.id)}
+                  onClick={(e) => handleDelete(e, track.id)}
                 >
                   <Trash2 size={18} />
                 </Button>
               </div>
-              <AudioPlayer trackUrl={track.url} trackName={track.name} />
+              
+              {expandedTrackId === track.id && (
+                <div className="pt-2">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Загружен: {new Date(track.uploadDate).toLocaleDateString()}
+                  </p>
+                  <AudioPlayer trackUrl={track.url} trackName={track.name} />
+                </div>
+              )}
             </div>
           ))}
         </div>
