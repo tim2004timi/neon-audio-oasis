@@ -17,13 +17,16 @@ export const Waveform: React.FC<WaveformProps> = ({
   const [waveform, setWaveform] = useState<number[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Generate random waveform data for demo
+  // In a real app, this would analyze the actual audio file
   useEffect(() => {
     const generateWaveform = () => {
       const segments = 50;
       const data: number[] = [];
       
       for (let i = 0; i < segments; i++) {
-        const height = Math.random() * 0.7 + 0.15;
+        // Generate random heights with some smoothing
+        const height = Math.random() * 0.7 + 0.15; // between 0.15 and 0.85
         data.push(height);
       }
       
@@ -43,27 +46,28 @@ export const Waveform: React.FC<WaveformProps> = ({
   
   return (
     <div 
-      className="waveform relative h-[60px]" 
+      className="waveform relative" 
       ref={containerRef}
       onClick={handleClick}
     >
       {waveform.map((height, index) => (
         <div
           key={index}
-          className="wave-segment absolute bottom-[30%] transition-all duration-200"
+          className="wave-segment absolute transition-all duration-200"
           style={{
             left: `${(index / waveform.length) * 100}%`,
-            height: `${height * 40}%`,
+            height: `${height * 100}%`,
             opacity: index / waveform.length <= progress ? 1 : 0.4,
             transform: isPlaying && index / waveform.length <= progress 
-              ? `scaleY(1)` 
-              : 'scaleY(0.8)'
+              ? 'scaleY(1.2)' 
+              : 'scaleY(1)'
           }}
         />
       ))}
       
+      {/* Progress indicator */}
       <div 
-        className="absolute bottom-[30%] h-[40%] bg-accent/20 pointer-events-none"
+        className="absolute bottom-0 h-full bg-accent/20 pointer-events-none"
         style={{ width: `${progress * 100}%` }}
       />
     </div>
